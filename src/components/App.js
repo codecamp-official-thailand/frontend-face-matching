@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import PrivateRoutes from "./private-routes/PrivateRoutes";
+import LocalStorageService from "../services/LocalStorageService";
 
 function App() {
-  const [role, setRole] = useState("guest");
-
-  useEffect(() => {
-    if(localStorage.getItem("TOKEN")){
-      setRole('maker')
-    }
-  }, [])
+  const [role, setRole] = useState(LocalStorageService.getRole());
 
   return (
     <div className="App">

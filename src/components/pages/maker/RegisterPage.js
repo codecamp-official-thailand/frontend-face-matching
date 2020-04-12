@@ -1,58 +1,40 @@
 import React from "react";
 import {
   Form,
+  notification,
   Input,
   Button,
   Row,
   Col,
   Typography,
   Divider,
-  notification,
 } from "antd";
-import axios from "../../../configs/axios";
-import LocalStorageService from "../../../services/LocalStorageService";
-import { Link } from "react-router-dom";
-import querystring from "querystring";
+import axios from "axios";
 
 const { Title } = Typography;
 
 const layout = {
-  labelCol: { xs: 24, sm: 5, md: 4, lg: 5, xl: 5, xxl: 5 },
-  wrapperCol: { xs: 24, sm: 19, md: 20, lg: 19, xl: 19, xxl: 19 },
+  labelCol: { xs: 24, sm: 8, md: 6, lg: 6, xl: 7, xxl: 6 },
+  wrapperCol: { xs: 24, sm: 16, md: 18, lg: 18, xl: 17, xxl: 18 },
 };
 
-export default function LoginPage(props) {
-  const onFinish = async ({ username, password }) => {
-    const data = querystring.stringify({
-      grant_type: "password",
-      username,
-      password,
-      scope: "profile",
+const openNotification = (type, placement = "topRight") => {
+  if (type === "success") {
+    notification.success({
+      message: `การลงทะเบียนสำเร็จ`,
+      placement,
     });
+  } else {
+    notification.error({
+      message: `การลงทะเบียนล้มเหลว`,
+      placement,
+    });
+  }
+};
 
-    const headers = {
-      Authorization: "Basic YXBwbGljYXRpb246c2VjcmV0",
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
-    try {
-      const result = await axios.post("/oauth/token", data, { headers });
-      LocalStorageService.setToken(result.data);
-      notification.success({
-        message: `เข้าสู่ระบบสำเร็จ`,
-        placement: "topRight",
-      });
-      props.history.push("/request-list");
-    } catch (err) {
-      console.log(err);
-      notification.error({
-        message: `เข้าสู่ระบบล้มเหลว`,
-        placement: "topRight",
-      });
-    }
-  };
-
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
+function RegisterPage(props) {
+  const onFinish = async (values) => {
+    props.history.push("/login");
   };
 
   return (
@@ -68,7 +50,7 @@ export default function LoginPage(props) {
         >
           <Row justify="center">
             <Title level={2} style={{ marginTop: "25px" }}>
-              Login as makers
+              Register as makers
             </Title>
           </Row>
           <Divider
@@ -83,11 +65,26 @@ export default function LoginPage(props) {
                 name="basic"
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
               >
                 <Form.Item
-                  label="Username"
-                  name="username"
+                  label="Email"
+                  name="email"
+                  rules={[
+                    {
+                      type: "email",
+                      message: "The input is not valid E-mail!",
+                    },
+                    {
+                      required: true,
+                      message: "Please input your E-mail!",
+                    },
+                  ]}
+                >
+                  <Input style={{ borderRadius: "5px" }} />
+                </Form.Item>
+                <Form.Item
+                  label="Name"
+                  name="name"
                   rules={[
                     { required: true, message: "Please input your username!" },
                   ]}
@@ -103,6 +100,30 @@ export default function LoginPage(props) {
                 >
                   <Input.Password style={{ borderRadius: "5px" }} />
                 </Form.Item>
+                <Form.Item
+                  name="confirm"
+                  label="Confirm Password"
+                  dependencies={["password"]}
+                  hasFeedback
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please confirm your password!",
+                    },
+                    ({ getFieldValue }) => ({
+                      validator(rule, value) {
+                        if (!value || getFieldValue("password") === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          "The two passwords that you entered do not match!"
+                        );
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
                 <Form.Item style={{ width: "100%", justifyContent: "center" }}>
                   <Row justify="center">
                     <Button
@@ -115,9 +136,8 @@ export default function LoginPage(props) {
                       type="primary"
                       htmlType="submit"
                     >
-                      Login
+                      Register
                     </Button>
-                    หรือ&nbsp;<Link to="/register">ลงทะเบียน</Link>
                   </Row>
                 </Form.Item>
               </Form>
@@ -128,3 +148,5 @@ export default function LoginPage(props) {
     </Row>
   );
 }
+
+export default RegisterPage;

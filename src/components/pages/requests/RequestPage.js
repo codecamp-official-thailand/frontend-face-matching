@@ -37,7 +37,41 @@ export default function RequestPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await Axios.get(`/sub-districts/?districts=${districtId}`);
+      const result = await Axios.get(`/departments`);
+      setDepartmentsList(result.data);
+    };
+
+    form.setFieldsValue({
+      Departments: "โปรดเลือกแผนก",
+    });
+
+    fetchData();
+  }, [hospitalId]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await Axios.get(
+        `/hospital/?provinces=${provinceId}&districts=${districtId}&subdistricts=${subDistrictId}`
+      );
+      setDepartmentsList([]);
+      setHospitalsList(result.data);
+    };
+
+    form.setFieldsValue({
+      Hospitals: "โปรดเลือกโรงพยาบาล",
+      Departments: "",
+    });
+
+    fetchData();
+  }, [subDistrictId]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await Axios.get(
+        `/sub-districts/?provinces=${provinceId}&districts=${districtId}`
+      );
+      setDepartmentsList([]);
+      setHospitalsList([]);
       setSubDistrictsList(result.data);
     };
 
@@ -53,6 +87,8 @@ export default function RequestPage() {
   useEffect(() => {
     const fetchData = async () => {
       const result = await Axios.get(`/districts/?provinces=${provinceId}`);
+      setDepartmentsList([]);
+      setHospitalsList([]);
       setSubDistrictsList([]);
       setDistrictsList(result.data);
     };
@@ -70,6 +106,8 @@ export default function RequestPage() {
   useEffect(() => {
     const fetchData = async () => {
       const result = await Axios.get(`/provinces/?geographies=${geographyId}`);
+      setDepartmentsList([]);
+      setHospitalsList([]);
       setSubDistrictsList([]);
       setDistrictsList([]);
       setProvincesList(result.data);
@@ -104,6 +142,7 @@ export default function RequestPage() {
   }, []);
 
   function onChangeId(value, labelNameEN) {
+    console.log(labelNameEN);
     switch (labelNameEN) {
       case "Geographies":
         setGeographyId(value);
@@ -114,7 +153,7 @@ export default function RequestPage() {
       case "Districts":
         setDistrictId(value);
         break;
-      case "Sub-districts":
+      case "SubDistricts":
         setSubDistrictId(value);
         break;
       case "Hospitals":
@@ -136,7 +175,7 @@ export default function RequestPage() {
   ) {
     let englishLabel = labelNameEN;
     if (labelNameEN === "Sub-districts") labelNameEN = "SubDistricts";
-
+    console.log(renderList);
     return (
       <Form.Item
         label={`${labelNameTH} (${englishLabel})`}
