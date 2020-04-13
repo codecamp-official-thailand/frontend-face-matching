@@ -67,13 +67,14 @@ const columns = [
 
 function AllRequestPage() {
   const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [requestList, setRequestList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await axios.get(
-        `/requests/list/?numPerPage=10&page=${pageNumber}`
+        `/requests/list/?numPerPage=${pageSize}&page=${pageNumber}`
       );
 
       setRequestList(result.data.results);
@@ -81,11 +82,12 @@ function AllRequestPage() {
     };
 
     fetchData();
-  }, [pageNumber]);
+  }, [pageNumber, pageSize]);
 
   function onChange(pageNumber) {
     console.log("Page: ", pageNumber);
     setPageNumber(pageNumber.current);
+    setPageSize(pageNumber.pageSize);
   }
 
   return (

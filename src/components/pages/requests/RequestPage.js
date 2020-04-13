@@ -239,13 +239,18 @@ export default function RequestPage() {
                 }}
               >
                 {renderList("ภูมิภาค", "Geographies", geographiesList)}
-                {renderList("จังหวัด", "Provinces", provincesList, "name_th")}
-                {renderList("อำเภอ/เขต", "Districts", districtsList, "name_th")}
+                {renderList("จังหวัด", "Provinces", provincesList, "province")}
+                {renderList(
+                  "อำเภอ/เขต",
+                  "Districts",
+                  districtsList,
+                  "district"
+                )}
                 {renderList(
                   "ตำบล/แขวง",
                   "Sub-districts",
                   subDistrictsList,
-                  "name_th"
+                  "subDistrict"
                 )}
                 {renderList("โรงพยาบาล", "Hospitals", hospitalsList)}
                 {renderList("แผนก", "Departments", departmentsList)}
