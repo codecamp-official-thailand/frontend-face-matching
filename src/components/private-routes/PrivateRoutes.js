@@ -10,12 +10,9 @@ function PrivateRoutes(props) {
     <Switch>
       {allowedRoutes.map((route) => {
         return (
-          <Route
-            exact
-            path={route.url}
-            component={route.component}
-            key={route.url}
-          />
+          <Route exact path={route.url} key={route.url}>
+            <route.component setRole={props.setRole} />
+          </Route>
         );
       })}
       <Redirect to={redirectRoute} />

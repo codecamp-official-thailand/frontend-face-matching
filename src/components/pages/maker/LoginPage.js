@@ -37,11 +37,11 @@ export default function LoginPage(props) {
     try {
       const result = await axios.post("/oauth/token", data, { headers });
       LocalStorageService.setToken(result.data);
+      props.setRole("maker");
       notification.success({
         message: `เข้าสู่ระบบสำเร็จ`,
         placement: "topRight",
       });
-      props.history.push("/request-list");
     } catch (err) {
       console.log(err);
       notification.error({
