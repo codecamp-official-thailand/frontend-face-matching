@@ -10,12 +10,13 @@ import {
   Divider,
 } from "antd";
 import axios from "axios";
+import { withRouter } from "react-router-dom";
 
 const { Title } = Typography;
 
 const layout = {
-  labelCol: { xs: 24, sm: 8, md: 6, lg: 6, xl: 7, xxl: 6 },
-  wrapperCol: { xs: 24, sm: 16, md: 18, lg: 18, xl: 17, xxl: 18 },
+  labelCol: { xs: 24, sm: 24, md: 10, lg: 10, xl: 10, xxl: 9 },
+  wrapperCol: { xs: 24, sm: 24, md: 14, lg: 14, xl: 14, xxl: 15 },
 };
 
 const openNotification = (type, placement = "topRight") => {
@@ -34,12 +35,30 @@ const openNotification = (type, placement = "topRight") => {
 
 function RegisterPage(props) {
   const onFinish = async (values) => {
-    props.history.push("/login");
+    console.log(values);
+    const body = {
+      email: values.email,
+      first_name: values.first_name,
+      last_name: values.last_name,
+      line_id: values.line_id,
+      nick_name: values.nick_name,
+      password: values.password,
+      phone_no: values.phone_no,
+    };
+
+    try {
+      await axios.post("/makers/register", body);
+      openNotification("success");
+      props.history.push("/login");
+    } catch (ex) {
+      console.log(ex);
+      openNotification("error");
+    }
   };
 
   return (
     <Row justify="center">
-      <Col xs={23} sm={18} md={18} lg={14} xl={10} xxl={8}>
+      <Col xs={23} sm={18} md={18} lg={14} xl={12} xxl={10}>
         <div
           style={{
             borderRadius: "5px",
@@ -67,7 +86,7 @@ function RegisterPage(props) {
                 onFinish={onFinish}
               >
                 <Form.Item
-                  label="Email"
+                  label="อีเมล์ (Username)"
                   name="email"
                   rules={[
                     {
@@ -83,8 +102,8 @@ function RegisterPage(props) {
                   <Input style={{ borderRadius: "5px" }} />
                 </Form.Item>
                 <Form.Item
-                  label="Name"
-                  name="name"
+                  label="ชื่อจริง (First name)"
+                  name="first_name"
                   rules={[
                     { required: true, message: "Please input your username!" },
                   ]}
@@ -92,7 +111,43 @@ function RegisterPage(props) {
                   <Input style={{ borderRadius: "5px" }} />
                 </Form.Item>
                 <Form.Item
-                  label="Password"
+                  label="นามสกุล (Last name)"
+                  name="last_name"
+                  rules={[
+                    { required: true, message: "Please input your username!" },
+                  ]}
+                >
+                  <Input style={{ borderRadius: "5px" }} />
+                </Form.Item>
+                <Form.Item
+                  label="ชื่อเล่น (Nick Name)"
+                  name="nick_name"
+                  rules={[
+                    { required: true, message: "Please input your username!" },
+                  ]}
+                >
+                  <Input style={{ borderRadius: "5px" }} />
+                </Form.Item>
+                <Form.Item
+                  label="ไลน์ไอดี (Line ID)"
+                  name="line_id"
+                  rules={[
+                    { required: true, message: "Please input your username!" },
+                  ]}
+                >
+                  <Input style={{ borderRadius: "5px" }} />
+                </Form.Item>
+                <Form.Item
+                  label="เบอร์โทรศัพท์ (Phone Number)"
+                  name="phone_no"
+                  rules={[
+                    { required: true, message: "Please input your username!" },
+                  ]}
+                >
+                  <Input style={{ borderRadius: "5px" }} />
+                </Form.Item>
+                <Form.Item
+                  label="รหัสผ่าน (Password)"
                   name="password"
                   rules={[
                     { required: true, message: "Please input your password!" },
@@ -102,7 +157,7 @@ function RegisterPage(props) {
                 </Form.Item>
                 <Form.Item
                   name="confirm"
-                  label="Confirm Password"
+                  label="ยืนยันรหัสผ่าน (Confirm Password)"
                   dependencies={["password"]}
                   hasFeedback
                   rules={[
@@ -149,4 +204,4 @@ function RegisterPage(props) {
   );
 }
 
-export default RegisterPage;
+export default withRouter(RegisterPage);

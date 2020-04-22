@@ -9,18 +9,21 @@ import {
   Button,
   InputNumber,
   Divider,
+  notification,
+  Modal,
 } from "antd";
 import Axios from "../../../configs/axios";
 import "./RequestPage.css";
+import axios from "../../../configs/axios";
+import { withRouter } from "react-router-dom";
 
-const { Title } = Typography;
-
+const { Title, Text } = Typography;
 const layout = {
   labelCol: { xs: 24, sm: 9, md: 8, lg: 9, xl: 8, xxl: 8 },
   wrapperCol: { xs: 24, sm: 15, md: 16, lg: 15, xl: 16, xxl: 16 },
 };
 
-export default function RequestPage() {
+function RequestPage(props) {
   const [form] = Form.useForm();
   const [geographiesList, setGeographiesList] = useState([]);
   const [provincesList, setProvincesList] = useState([]);
@@ -31,54 +34,78 @@ export default function RequestPage() {
   const [geographyId, setGeographyId] = useState(0);
   const [provinceId, setProvinceId] = useState(0);
   const [districtId, setDistrictId] = useState(0);
-  const [subDistrictId, setSubDistrictId] = useState(0);
+  const [pdsId, setPdsId] = useState(0);
   const [hospitalId, setHospitalId] = useState(0);
   const [departmentId, setDepartmentId] = useState(0);
+  const [isShow, setIsShow] = useState({
+    hospital: false,
+    department: false,
+  });
+  const [currentAddedValue, setCurrentAddedValue] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [fieldAddedValue, setFieldAddedValue] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await Axios.get(`/departments`);
-      setDepartmentsList(result.data);
-    };
+    if (departmentId === -1) {
+      setIsShow((prevIsShow) => ({
+        hospital: prevIsShow.hospital,
+        department: true,
+      }));
+    } else {
+      setIsShow((prevIsShow) => ({
+        hospital: prevIsShow.hospital,
+        department: false,
+      }));
+    }
+  }, [departmentId]);
 
-    form.setFieldsValue({
-      Departments: "โปรดเลือกแผนก",
-    });
-
-    fetchData();
+  useEffect(() => {
+    if (hospitalId === -1) {
+      setIsShow((prevIsShow) => ({
+        hospital: true,
+        department: prevIsShow.department,
+      }));
+    } else {
+      setIsShow((prevIsShow) => ({
+        hospital: false,
+        department: prevIsShow.department,
+      }));
+    }
   }, [hospitalId]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await Axios.get(
-        `/hospital/?provinces=${provinceId}&districts=${districtId}&subdistricts=${subDistrictId}`
-      );
-      setDepartmentsList([]);
+      const result = await Axios.get(`/hospitals?pds_id=${pdsId}`);
       setHospitalsList(result.data);
+      setIsShow((prevIsShow) => ({
+        hospital: false,
+        department: prevIsShow.department,
+      }));
     };
 
     form.setFieldsValue({
       Hospitals: "โปรดเลือกโรงพยาบาล",
-      Departments: "",
     });
 
     fetchData();
-  }, [subDistrictId]);
+  }, [pdsId]);
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await Axios.get(
-        `/sub-districts/?provinces=${provinceId}&districts=${districtId}`
+        `/sub-districts/?province_id=${provinceId}&district_id=${districtId}`
       );
-      setDepartmentsList([]);
       setHospitalsList([]);
       setSubDistrictsList(result.data);
+      setIsShow((prevIsShow) => ({
+        hospital: false,
+        department: prevIsShow.department,
+      }));
     };
 
     form.setFieldsValue({
       SubDistricts: "โปรดเลือกอำเภอ/แขวง",
       Hospitals: "",
-      Departments: "",
     });
 
     fetchData();
@@ -86,18 +113,20 @@ export default function RequestPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await Axios.get(`/districts/?provinces=${provinceId}`);
-      setDepartmentsList([]);
+      const result = await Axios.get(`/districts/?province_id=${provinceId}`);
       setHospitalsList([]);
       setSubDistrictsList([]);
       setDistrictsList(result.data);
+      setIsShow((prevIsShow) => ({
+        hospital: false,
+        department: prevIsShow.department,
+      }));
     };
 
     form.setFieldsValue({
       Districts: "โปรดเลือกตำบล/เขต",
       SubDistricts: "",
       Hospitals: "",
-      Departments: "",
     });
 
     fetchData();
@@ -105,12 +134,14 @@ export default function RequestPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await Axios.get(`/provinces/?geographies=${geographyId}`);
-      setDepartmentsList([]);
+      const result = await Axios.get(`/provinces?region_id=${geographyId}`);
       setHospitalsList([]);
       setSubDistrictsList([]);
-      setDistrictsList([]);
       setProvincesList(result.data);
+      setIsShow((prevIsShow) => ({
+        hospital: false,
+        department: prevIsShow.department,
+      }));
     };
 
     form.setFieldsValue({
@@ -118,7 +149,6 @@ export default function RequestPage() {
       Districts: "",
       SubDistricts: "",
       Hospitals: "",
-      Departments: "",
     });
 
     fetchData();
@@ -126,8 +156,10 @@ export default function RequestPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await Axios.get("/geographies");
-      setGeographiesList(result.data);
+      const regions = await Axios.get("/regions");
+      const departments = await Axios.get(`/departments`);
+      setGeographiesList(regions.data);
+      setDepartmentsList(departments.data);
     };
     form.setFieldsValue({
       Geographies: "โปรดเลือกภาค",
@@ -135,14 +167,13 @@ export default function RequestPage() {
       Districts: "",
       SubDistricts: "",
       Hospitals: "",
-      Departments: "",
+      Departments: "โปรดเลือกแผนก",
     });
 
     fetchData();
   }, []);
 
   function onChangeId(value, labelNameEN) {
-    console.log(labelNameEN);
     switch (labelNameEN) {
       case "Geographies":
         setGeographyId(value);
@@ -154,7 +185,7 @@ export default function RequestPage() {
         setDistrictId(value);
         break;
       case "SubDistricts":
-        setSubDistrictId(value);
+        setPdsId(value);
         break;
       case "Hospitals":
         setHospitalId(value);
@@ -174,8 +205,31 @@ export default function RequestPage() {
     fieldValue = "name"
   ) {
     let englishLabel = labelNameEN;
+
     if (labelNameEN === "Sub-districts") labelNameEN = "SubDistricts";
-    console.log(renderList);
+
+    const jsxRender = renderList.map((item) => (
+      <Select.Option key={item.id} value={item.id}>
+        {item[fieldValue]}
+      </Select.Option>
+    ));
+
+    if (pdsId && labelNameEN === "Hospitals") {
+      jsxRender.push(
+        <Select.Option key={-1} value={-1}>
+          อื่น ๆ (โปรดกรอกเพิ่มเติม)
+        </Select.Option>
+      );
+    }
+
+    if (labelNameEN === "Departments") {
+      jsxRender.push(
+        <Select.Option key={-1} value={-1}>
+          อื่น ๆ (โปรดกรอกเพิ่มเติม)
+        </Select.Option>
+      );
+    }
+
     return (
       <Form.Item
         label={`${labelNameTH} (${englishLabel})`}
@@ -184,22 +238,63 @@ export default function RequestPage() {
         rules={[{ required: true, message: `โปรดกรอก${labelNameTH}` }]}
       >
         <Select onChange={(value) => onChangeId(value, labelNameEN)}>
-          {renderList.map((item) => (
-            <Select.Option key={item.id} value={item.id}>
-              {item[fieldValue]}
-            </Select.Option>
-          ))}
+          {jsxRender}
         </Select>
       </Form.Item>
     );
   }
 
-  function onFinish(values) {
+  async function onFinish(values) {
     console.log(values);
+    const body = {
+      region_id: values.Geographies,
+      province_id: values.Provinces,
+      district_id: values.Districts,
+      sub_district_id: values.SubDistricts,
+      amount: values.amount,
+      department_id: values.Departments,
+      name: values.name,
+      line_id: values.lineId,
+      hospital_id: values.Hospitals,
+    };
+
+    if (values.Hospitals === -1) {
+      body.hospital_name = values.specificHospital;
+    }
+
+    if (values.Departments === -1) {
+      body.department_name = values.specificDepartment;
+    }
+
+    try {
+      await axios.post("/requests", body);
+      notification.success({
+        message: "ส่ง Request สำเร็จ",
+        description: `การส่ง Request Face-Shield ของคุณ ${values.name} สำเร็จ`,
+      });
+      props.history.push("/");
+    } catch (ex) {
+      notification.error({
+        message: "เกิดข้อผิดพลาดขึ้น",
+        description: "การส่ง Request Face-Shield ไม่สำเร็จ",
+      });
+    }
   }
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
+  const handleOk = (e) => {
+    console.log(e);
+    setVisible(false);
+  };
+
+  const handleCancel = (e) => {
+    console.log(e);
+    setVisible(false);
+  };
+
+  const comfirm = (name, value) => {
+    setFieldAddedValue(name);
+    setCurrentAddedValue(value);
+    setVisible(true);
   };
 
   return (
@@ -226,7 +321,6 @@ export default function RequestPage() {
               <Form
                 {...layout}
                 onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
                 style={{ width: "100%" }}
                 form={form}
                 defaultValue={{
@@ -238,7 +332,12 @@ export default function RequestPage() {
                   Departments: "",
                 }}
               >
-                {renderList("ภูมิภาค", "Geographies", geographiesList)}
+                {renderList(
+                  "ภูมิภาค",
+                  "Geographies",
+                  geographiesList,
+                  "region"
+                )}
                 {renderList("จังหวัด", "Provinces", provincesList, "province")}
                 {renderList(
                   "อำเภอ/เขต",
@@ -250,10 +349,50 @@ export default function RequestPage() {
                   "ตำบล/แขวง",
                   "Sub-districts",
                   subDistrictsList,
-                  "subDistrict"
+                  "sub_district"
                 )}
-                {renderList("โรงพยาบาล", "Hospitals", hospitalsList)}
-                {renderList("แผนก", "Departments", departmentsList)}
+                {renderList(
+                  "โรงพยาบาล",
+                  "Hospitals",
+                  hospitalsList,
+                  "hospital"
+                )}
+                {isShow.hospital ? (
+                  <Form.Item
+                    label={
+                      <Text type="danger">อื่น ๆ (โปรดกรอกเพิ่มเติม)</Text>
+                    }
+                    name="specificHospital"
+                    rules={[
+                      { required: true, message: "โปรดกรอกชื่อโรงพยาบาล" },
+                    ]}
+                  >
+                    <Input
+                      onChange={(e) => setCurrentAddedValue(e.target.value)}
+                      onBlur={(e) => comfirm("โรงพยาบาล", e.target.value)}
+                    />
+                  </Form.Item>
+                ) : null}
+                {renderList(
+                  "แผนก",
+                  "Departments",
+                  departmentsList,
+                  "department"
+                )}
+                {isShow.department ? (
+                  <Form.Item
+                    label={
+                      <Text type="danger">อื่น ๆ (โปรดกรอกเพิ่มเติม)</Text>
+                    }
+                    name="specificDepartment"
+                    rules={[{ required: true, message: "โปรดกรอกชื่อแผนก" }]}
+                  >
+                    <Input
+                      onChange={(e) => setCurrentAddedValue(e.target.value)}
+                      onBlur={(e) => comfirm("แผนก", e.target.value)}
+                    />
+                  </Form.Item>
+                ) : null}
                 <Form.Item
                   label="ชื่อผู้ขอ"
                   name="name"
@@ -304,6 +443,22 @@ export default function RequestPage() {
           </Row>
         </div>
       </Col>
+      <Modal
+        title={`เพิ่ม${fieldAddedValue}ลงระบบ`}
+        visible={visible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <p>
+          คุณแน่ใจว่าต้องการเพิ่ม{fieldAddedValue}ชื่อ
+          <Text type="danger">
+            <strong>{currentAddedValue}</strong>
+          </Text>
+          ลงระบบ
+        </p>
+      </Modal>
     </Row>
   );
 }
+
+export default withRouter(RequestPage);
