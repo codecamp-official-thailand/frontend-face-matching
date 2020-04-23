@@ -135,8 +135,8 @@ function RequestPage(props) {
   useEffect(() => {
     const fetchData = async () => {
       const result = await Axios.get(`/provinces?region_id=${geographyId}`);
-      setHospitalsList([]);
-      setSubDistrictsList([]);
+      const departments = await Axios.get(`/departments`);
+      setDepartmentsList(departments.data);
       setProvincesList(result.data);
       setIsShow((prevIsShow) => ({
         hospital: false,
@@ -149,24 +149,6 @@ function RequestPage(props) {
       Districts: "",
       SubDistricts: "",
       Hospitals: "",
-    });
-
-    fetchData();
-  }, [geographyId]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const regions = await Axios.get("/regions");
-      const departments = await Axios.get(`/departments`);
-      setGeographiesList(regions.data);
-      setDepartmentsList(departments.data);
-    };
-    form.setFieldsValue({
-      Geographies: "โปรดเลือกภาค",
-      Provinces: "",
-      Districts: "",
-      SubDistricts: "",
-      Hospitals: "",
       Departments: "โปรดเลือกแผนก",
     });
 
@@ -175,9 +157,6 @@ function RequestPage(props) {
 
   function onChangeId(value, labelNameEN) {
     switch (labelNameEN) {
-      case "Geographies":
-        setGeographyId(value);
-        break;
       case "Provinces":
         setProvinceId(value);
         break;
@@ -245,9 +224,7 @@ function RequestPage(props) {
   }
 
   async function onFinish(values) {
-    console.log(values);
     const body = {
-      region_id: values.Geographies,
       province_id: values.Provinces,
       district_id: values.Districts,
       sub_district_id: values.SubDistricts,
@@ -272,7 +249,7 @@ function RequestPage(props) {
         message: "ส่ง Request สำเร็จ",
         description: `การส่ง Request Face-Shield ของคุณ ${values.name} สำเร็จ`,
       });
-      props.history.push("/");
+      // props.history.push("/");
     } catch (ex) {
       notification.error({
         message: "เกิดข้อผิดพลาดขึ้น",
@@ -292,6 +269,7 @@ function RequestPage(props) {
   };
 
   const comfirm = (name, value) => {
+    if (!value) return;
     setFieldAddedValue(name);
     setCurrentAddedValue(value);
     setVisible(true);
@@ -324,7 +302,6 @@ function RequestPage(props) {
                 style={{ width: "100%" }}
                 form={form}
                 defaultValue={{
-                  Geographies: "โปรดเลือกภาค",
                   Provinces: "",
                   Districts: "",
                   SubDistricts: "",
@@ -332,12 +309,6 @@ function RequestPage(props) {
                   Departments: "",
                 }}
               >
-                {renderList(
-                  "ภูมิภาค",
-                  "Geographies",
-                  geographiesList,
-                  "region"
-                )}
                 {renderList("จังหวัด", "Provinces", provincesList, "province")}
                 {renderList(
                   "อำเภอ/เขต",
