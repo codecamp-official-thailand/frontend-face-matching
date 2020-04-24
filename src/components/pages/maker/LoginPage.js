@@ -23,19 +23,8 @@ const layout = {
 
 export default function LoginPage(props) {
   const onFinish = async ({ username, password }) => {
-    const data = querystring.stringify({
-      grant_type: "password",
-      username,
-      password,
-      scope: "profile",
-    });
-
-    const headers = {
-      Authorization: "Basic YXBwbGljYXRpb246c2VjcmV0",
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
     try {
-      const result = await axios.post("/oauth/token", data, { headers });
+      const result = await axios.post("/makers/login", { username, password });
       LocalStorageService.setToken(result.data);
       props.setRole("maker");
       notification.success({

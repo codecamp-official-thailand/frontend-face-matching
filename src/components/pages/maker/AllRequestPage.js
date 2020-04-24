@@ -1,120 +1,254 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Tag, Table, Row, Col } from "antd";
+import { Button, Tag, Table, Row, Col, Divider } from "antd";
+import jwtDecode from "jwt-decode";
+import LocalStorageService from "../../../services/LocalStorageService";
 
 const columns = [
   {
     title: "ชื่อโรงพยาบาล",
-    dataIndex: "hospital_name",
-    key: "name",
-    // render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "จำนวนที่ขอ",
-    dataIndex: "total_request",
-    key: "total_request",
-  },
-  {
-    title: "จำนวนที่มีคนจอง",
-    dataIndex: "total",
-    key: "total",
-  },
-  {
-    title: "จำนวนที่ส่งไปแล้ว",
-    dataIndex: "total_send",
-    key: "total_send",
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
+    dataIndex: "MedicalStaff",
+    render: (MedicalStaff) => (
+      <div key={MedicalStaff.id + MedicalStaff.Hospital.hospital}>
+        {MedicalStaff.Hospital.hospital}
+      </div>
+    ),
   },
   {
     title: "แผนก",
-    dataIndex: "department",
-    key: "department",
+    dataIndex: "MedicalStaff",
+    render: (MedicalStaff) => (
+      <div key={MedicalStaff.id}>{MedicalStaff.Department.department}</div>
+    ),
   },
-  //   {
-  //     title: "Tags",
-  //     key: "tags",
-  //     dataIndex: "tags",
-  //     render: (tags) => (
-  //       <span>
-  //         {tags.map((tag) => {
-  //           let color = tag.length > 5 ? "geekblue" : "green";
-  //           if (tag === "loser") {
-  //             color = "volcano";
-  //           }
-  //           return (
-  //             <Tag color={color} key={tag}>
-  //               {tag.toUpperCase()}
-  //             </Tag>
-  //           );
-  //         })}
-  //       </span>
-  //     ),
-  //   },
+  {
+    title: "จำนวนที่ขอ",
+    dataIndex: "request_amount",
+    key: "request_amount",
+  },
+  {
+    title: "จำนวนที่มีคนจอง",
+    dataIndex: "reserve_amount",
+    key: "reserve_amount",
+  },
+  {
+    title: "จำนวนที่ส่งไปแล้ว",
+    dataIndex: "delivered_amount",
+    key: "delivered_amount",
+  },
+  {
+    title: "จังหวัด",
+    dataIndex: "MedicalStaff",
+    render: (MedicalStaff) => (
+      <div key={MedicalStaff.id}>
+        {MedicalStaff.Hospital.ProvinceDistrictSubdistrict.province}
+      </div>
+    ),
+  },
   {
     title: "Action",
-    key: "action",
     render: (text, record) => (
-      <span>
-        <a>Reserve</a>
+      <span key={record.id}>
+        <Button>Reserve</Button>
       </span>
     ),
   },
 ];
 
 function AllRequestPage() {
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
+  const [pageNumberRequest, setPageNumberRequest] = useState(1);
+  const [pageNumberUrgent, setPageNumberUrgent] = useState(1);
+  const [pageNumberRegion, setPageNumberRegion] = useState(1);
+  const [pageSizeRequest, setPageSizeRequest] = useState(10);
+  const [pageSizeUrgent, setPageSizeUrgent] = useState(10);
+  const [pageSizeRegion, setPageSizeRegion] = useState(10);
   const [requestList, setRequestList] = useState([]);
+  const [urgentRequestList, setUrgentRequestList] = useState([]);
+  const [regionRequestList, setRegionRequestList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios.get(
-        `/requests/list/?numPerPage=${pageSize}&page=${pageNumber}`
+      await axios.get("/makers/check-token");
+      const requests = await axios.get(
+        `/requests/?page_size=${pageSizeRequest}&page=${pageNumberRequest}`
       );
 
-      setRequestList(result.data.results);
-      setTotalItems(result.data.pagination.totalItem);
+      setRequestList({
+        requests: requests.data.requests,
+        totalRequests: requests.data.totalRequests,
+      });
     };
 
     fetchData();
-  }, [pageNumber, pageSize]);
+  }, [pageNumberRequest, pageSizeRequest]);
 
-  function onChange(pageNumber) {
-    console.log("Page: ", pageNumber);
-    setPageNumber(pageNumber.current);
-    setPageSize(pageNumber.pageSize);
+  useEffect(() => {
+    const fetchData = async () => {
+      const urgentRequests = await axios.get(
+        `/requests/?page_size=${pageSizeUrgent}&page=${pageNumberUrgent}&urgent=1`
+      );
+
+      setUrgentRequestList({
+        requests: urgentRequests.data.requests,
+        totalRequests: urgentRequests.data.totalRequests,
+      });
+    };
+
+    fetchData();
+  }, [pageNumberUrgent, pageSizeUrgent]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const user = jwtDecode(LocalStorageService.getAccessToken());
+      const regionRequests = await axios.get(
+        `/requests/?page_size=${pageSizeRegion}&page=${pageNumberRegion}&region_id=${user.region_id}`
+      );
+
+      setRegionRequestList({
+        requests: regionRequests.data.requests,
+        totalRequests: regionRequests.data.totalRequests,
+      });
+    };
+
+    fetchData();
+  }, [pageNumberRegion, pageSizeRegion]);
+
+  function onChange(pageNumber, type) {
+    switch (type) {
+      case "urgent":
+        setPageNumberUrgent(pageNumber.current);
+        setPageSizeUrgent(pageNumber.pageSize);
+        break;
+      case "region":
+        setPageNumberRegion(pageNumber.current);
+        setPageSizeRegion(pageNumber.pageSize);
+        break;
+      case "request":
+        setPageNumberRequest(pageNumber.current);
+        setPageSizeRequest(pageNumber.pageSize);
+        break;
+      default:
+      // Do Nothing
+    }
   }
 
   return (
-    <Row justify="center">
-      <Col span={23}>
-        <div
-          style={{
-            borderRadius: "5px",
-            boxShadow: "5px 10px 20px rgba(0, 0, 0, 0.5)",
-            backgroundColor: "#F8F8F8",
-            marginTop: "20px",
-            padding: "0 5px 0 0",
-          }}
-        >
-          <Table
-            style={{ borderRadius: "5px" }}
-            columns={columns}
-            dataSource={requestList}
-            pagination={{
-              defaultCurrent: pageNumber,
-              total: totalItems,
+    <div style={{ marginBottom: "30px" }}>
+      <Row justify="center">
+        <Col span={23}>
+          <div
+            style={{
+              borderRadius: "5px",
+              boxShadow: "5px 10px 20px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#F8F8F8",
+              marginTop: "20px",
+              padding: "0 5px 0 0",
+              border: "2px solid red",
             }}
-            onChange={onChange}
-          />
-        </div>
-      </Col>
-    </Row>
+          >
+            <div
+              style={{
+                marginTop: "15px",
+                marginLeft: "15px",
+                fontSize: "25px",
+                display: "flex",
+                alignItems: "start",
+                color: "red",
+              }}
+            >
+              โรงพยาบาลที่ต้องการความช่วยเหลือด่วน
+            </div>
+            <Divider style={{ backgroundColor: "red", marginBottom: "0" }} />
+            <Table
+              style={{ borderRadius: "5px" }}
+              columns={columns}
+              dataSource={urgentRequestList.requests}
+              pagination={{
+                defaultCurrent: pageNumberUrgent,
+                total: urgentRequestList.totalRequests,
+              }}
+              onChange={(pageNumber) => onChange(pageNumber, "urgent")}
+            />
+          </div>
+        </Col>
+      </Row>
+      <Row justify="center">
+        <Col span={23}>
+          <div
+            style={{
+              borderRadius: "5px",
+              boxShadow: "5px 10px 20px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#F8F8F8",
+              marginTop: "20px",
+              padding: "0 5px 0 0",
+              border: "2px solid black",
+            }}
+          >
+            <div
+              style={{
+                marginTop: "15px",
+                marginLeft: "15px",
+                fontSize: "25px",
+                display: "flex",
+                alignItems: "start",
+                color: "black",
+              }}
+            >
+              โรงพยาบาลที่อยู่พื้นที่ใกล้เคียงกับคุณ
+            </div>
+            <Divider style={{ backgroundColor: "black", marginBottom: "0" }} />
+            <Table
+              style={{ borderRadius: "5px" }}
+              columns={columns}
+              dataSource={regionRequestList.requests}
+              pagination={{
+                defaultCurrent: pageNumberRegion,
+                total: regionRequestList.totalRequests,
+              }}
+              onChange={(pageNumber) => onChange(pageNumber, "region")}
+            />
+          </div>
+        </Col>
+      </Row>
+      <Row justify="center">
+        <Col span={23}>
+          <div
+            style={{
+              borderRadius: "5px",
+              boxShadow: "5px 10px 20px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#F8F8F8",
+              marginTop: "20px",
+              padding: "0 5px 0 0",
+              border: "2px solid blue",
+            }}
+          >
+            <div
+              style={{
+                marginTop: "15px",
+                marginLeft: "15px",
+                fontSize: "25px",
+                display: "flex",
+                alignItems: "start",
+                color: "blue",
+              }}
+            >
+              โรงพยาบาลที่อยู่พื้นที่ใกล้เคียงกับคุณ
+            </div>
+            <Divider style={{ backgroundColor: "blue", marginBottom: "0" }} />
+            <Table
+              style={{ borderRadius: "5px" }}
+              columns={columns}
+              dataSource={requestList.requests}
+              pagination={{
+                defaultCurrent: pageNumberRequest,
+                total: requestList.totalRequests,
+              }}
+              onChange={(pageNumber) => onChange(pageNumber, "request")}
+            />
+          </div>
+        </Col>
+      </Row>
+    </div>
   );
 }
 

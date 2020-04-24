@@ -1,5 +1,6 @@
 import axios from "axios";
 import LocalStorageService from "../services/LocalStorageService";
+import { notification } from "antd";
 
 const localStorageService = LocalStorageService.getService();
 
@@ -24,9 +25,13 @@ axios.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       localStorageService.clearToken();
-
+      notification.error({
+        message: `กรุณาเข้าสู่ระบบใหม่`,
+        placement: "topRight",
+      });
+      window.location.reload();
       return Promise.reject(error);
     }
 

@@ -11,11 +11,13 @@ import {
   Divider,
   notification,
   Modal,
+  Table,
 } from "antd";
 import Axios from "../../../configs/axios";
 import "./RequestPage.css";
 import axios from "../../../configs/axios";
 import { withRouter } from "react-router-dom";
+import moment from "moment";
 
 const { Title, Text } = Typography;
 const layout = {
@@ -25,7 +27,6 @@ const layout = {
 
 function RequestPage(props) {
   const [form] = Form.useForm();
-  const [geographiesList, setGeographiesList] = useState([]);
   const [provincesList, setProvincesList] = useState([]);
   const [districtsList, setDistrictsList] = useState([]);
   const [subDistrictsList, setSubDistrictsList] = useState([]);
@@ -44,6 +45,8 @@ function RequestPage(props) {
   const [currentAddedValue, setCurrentAddedValue] = useState("");
   const [visible, setVisible] = useState(false);
   const [fieldAddedValue, setFieldAddedValue] = useState("");
+  const [requestList, setRequestList] = useState([]);
+  const [hospitalNameApi, setHospitalNameApi] = useState("");
 
   useEffect(() => {
     if (departmentId === -1) {
@@ -60,22 +63,36 @@ function RequestPage(props) {
   }, [departmentId]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      const hospital = await Axios.get(`/hospitals/${hospitalId}`);
+      const requestlist = await Axios.get(
+        `/requests?hospital_id=${hospitalId}`
+      );
+
+      setHospitalNameApi(hospital.data.hospital);
+      setRequestList(requestlist.data);
+    };
+
     if (hospitalId === -1) {
       setIsShow((prevIsShow) => ({
         hospital: true,
         department: prevIsShow.department,
       }));
+      setRequestList([]);
+      setHospitalNameApi("");
     } else {
       setIsShow((prevIsShow) => ({
         hospital: false,
         department: prevIsShow.department,
       }));
+      fetchData();
     }
   }, [hospitalId]);
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await Axios.get(`/hospitals?pds_id=${pdsId}`);
+      setRequestList([]);
       setHospitalsList(result.data);
       setIsShow((prevIsShow) => ({
         hospital: false,
@@ -96,6 +113,7 @@ function RequestPage(props) {
         `/sub-districts/?province_id=${provinceId}&district_id=${districtId}`
       );
       setHospitalsList([]);
+      setRequestList([]);
       setSubDistrictsList(result.data);
       setIsShow((prevIsShow) => ({
         hospital: false,
@@ -116,6 +134,7 @@ function RequestPage(props) {
       const result = await Axios.get(`/districts/?province_id=${provinceId}`);
       setHospitalsList([]);
       setSubDistrictsList([]);
+      setRequestList([]);
       setDistrictsList(result.data);
       setIsShow((prevIsShow) => ({
         hospital: false,
@@ -137,6 +156,7 @@ function RequestPage(props) {
       const result = await Axios.get(`/provinces?region_id=${geographyId}`);
       const departments = await Axios.get(`/departments`);
       setDepartmentsList(departments.data);
+      setRequestList([]);
       setProvincesList(result.data);
       setIsShow((prevIsShow) => ({
         hospital: false,
@@ -249,7 +269,7 @@ function RequestPage(props) {
         message: "ส่ง Request สำเร็จ",
         description: `การส่ง Request Face-Shield ของคุณ ${values.name} สำเร็จ`,
       });
-      // props.history.push("/");
+      props.history.push("/");
     } catch (ex) {
       notification.error({
         message: "เกิดข้อผิดพลาดขึ้น",
@@ -274,6 +294,51 @@ function RequestPage(props) {
     setCurrentAddedValue(value);
     setVisible(true);
   };
+
+  const columns = [
+    {
+      title: "ชื่อผู้ขอ",
+      dataIndex: "MedicalStaff",
+      key: "MedicalStaff",
+      render: (MedicalStaff) => (
+        <div key={MedicalStaff.id}>{MedicalStaff.name}</div>
+      ),
+    },
+    {
+      title: "แผนก",
+      dataIndex: "MedicalStaff",
+      key: "MedicalStaff",
+      render: (MedicalStaff) => (
+        <div key={MedicalStaff.Department.id}>
+          {MedicalStaff.Department.department}
+        </div>
+      ),
+    },
+    {
+      title: "จำนวนที่ขอ",
+      dataIndex: "request_amount",
+      key: "request_amount",
+    },
+    {
+      title: "จำนวนที่กำลังส่ง",
+      dataIndex: "reserve_amount",
+      key: "reserve_amount",
+    },
+    {
+      title: "จำนวนที่ส่งไปแล้ว",
+      dataIndex: "delivered_amount",
+      key: "delivered_amount",
+    },
+    {
+      title: "ส่งคำขอไปเมื่อ",
+      key: "createdAt",
+      render: (createdAt) => (
+        <div key={createdAt}>
+          {moment(createdAt).format("DD MMM YYYY HH:mm:ss")}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <Row justify="center" style={{ padding: "auto" }}>
@@ -328,6 +393,32 @@ function RequestPage(props) {
                   hospitalsList,
                   "hospital"
                 )}
+                {hospitalNameApi && requestList.length > 0 ? (
+                  <div
+                    style={{
+                      borderRadius: "5px",
+                      boxShadow: "5px 10px 20px rgba(0, 0, 0, 0.5)",
+                      backgroundColor: "#F8F8F8",
+                      marginTop: "20px",
+                      marginBottom: "30px",
+                    }}
+                  >
+                    <Row
+                      style={{ width: "100%", paddingTop: "10px" }}
+                      justify="center"
+                    >
+                      <Title level={3}>
+                        คำร้องขอทั้งหมดของ
+                        <Text type="danger">
+                          <strong>{hospitalNameApi}</strong>
+                        </Text>
+                      </Title>
+                      <Col>
+                        <Table dataSource={requestList} columns={columns} />
+                      </Col>
+                    </Row>
+                  </div>
+                ) : null}
                 {isShow.hospital ? (
                   <Form.Item
                     label={
