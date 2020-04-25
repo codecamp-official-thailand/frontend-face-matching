@@ -3,6 +3,7 @@ import LoginPage from "../components/pages/maker/LoginPage";
 import RegisterPage from "../components/pages/maker/RegisterPage";
 import AllRequestPage from "../components/pages/maker/AllRequestPage";
 import DashboardPage from "../components/pages/dashboard/Dashboard";
+import ReservePage from "../components/pages/reserves/ReservePage";
 
 const components = {
   requestPage: {
@@ -25,6 +26,10 @@ const components = {
     component: DashboardPage,
     url: "/",
   },
+  reservePage: {
+    component: ReservePage,
+    url: "/reserve-list",
+  },
 };
 
 export default {
@@ -38,7 +43,7 @@ export default {
     redirectRoute: "/",
   },
   maker: {
-    routes: [components.allRequestPage],
+    routes: [components.allRequestPage, components.reservePage],
     redirectRoute: "/request-list",
   },
 };

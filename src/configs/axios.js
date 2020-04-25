@@ -27,11 +27,11 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorageService.clearToken();
+      window.location.reload();
       notification.error({
         message: `กรุณาเข้าสู่ระบบใหม่`,
         placement: "topRight",
       });
-      window.location.reload();
       return Promise.reject(error);
     }
 
