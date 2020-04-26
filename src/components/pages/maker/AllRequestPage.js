@@ -3,6 +3,7 @@ import axios from "axios";
 import { Button, Tag, Table, Row, Col, Divider } from "antd";
 import jwtDecode from "jwt-decode";
 import LocalStorageService from "../../../services/LocalStorageService";
+import { Link } from "react-router-dom";
 
 const columns = [
   {
@@ -49,7 +50,9 @@ const columns = [
     title: "Action",
     render: (text, record) => (
       <span key={record.id}>
-        <Button>Reserve</Button>
+        <Link to={`/reserves/${record.id}`}>
+          <Button>Reserve</Button>
+        </Link>
       </span>
     ),
   },
@@ -65,6 +68,9 @@ function AllRequestPage() {
   const [requestList, setRequestList] = useState([]);
   const [urgentRequestList, setUrgentRequestList] = useState([]);
   const [regionRequestList, setRegionRequestList] = useState([]);
+  const [loadingRequest, setLoadingRequest] = useState(true);
+  const [loadingRegion, setLoadingRegion] = useState(true);
+  const [loadingUrgent, setLoadingUrgent] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +83,7 @@ function AllRequestPage() {
         requests: requests.data.requests,
         totalRequests: requests.data.totalRequests,
       });
+      setLoadingRequest(false);
     };
 
     fetchData();
@@ -92,6 +99,7 @@ function AllRequestPage() {
         requests: urgentRequests.data.requests,
         totalRequests: urgentRequests.data.totalRequests,
       });
+      setLoadingUrgent(false);
     };
 
     fetchData();
@@ -108,6 +116,7 @@ function AllRequestPage() {
         requests: regionRequests.data.requests,
         totalRequests: regionRequests.data.totalRequests,
       });
+      setLoadingRegion(false);
     };
 
     fetchData();
@@ -160,6 +169,7 @@ function AllRequestPage() {
             </div>
             <Divider style={{ backgroundColor: "red", marginBottom: "0" }} />
             <Table
+              loading={loadingUrgent}
               style={{ borderRadius: "5px" }}
               columns={columns}
               dataSource={urgentRequestList.requests}
@@ -198,6 +208,7 @@ function AllRequestPage() {
             </div>
             <Divider style={{ backgroundColor: "black", marginBottom: "0" }} />
             <Table
+              loading={loadingRegion}
               style={{ borderRadius: "5px" }}
               columns={columns}
               dataSource={regionRequestList.requests}
@@ -236,6 +247,7 @@ function AllRequestPage() {
             </div>
             <Divider style={{ backgroundColor: "blue", marginBottom: "0" }} />
             <Table
+              loading={loadingRequest}
               style={{ borderRadius: "5px" }}
               columns={columns}
               dataSource={requestList.requests}

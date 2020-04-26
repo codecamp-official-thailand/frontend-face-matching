@@ -4,6 +4,7 @@ import RegisterPage from "../components/pages/maker/RegisterPage";
 import AllRequestPage from "../components/pages/maker/AllRequestPage";
 import DashboardPage from "../components/pages/dashboard/Dashboard";
 import ReservePage from "../components/pages/reserves/ReservePage";
+import ReserveRequestPage from "../components/pages/reserves/ReserveRequestPage";
 
 const components = {
   requestPage: {
@@ -30,6 +31,10 @@ const components = {
     component: ReservePage,
     url: "/reserve-list",
   },
+  reserveRequestPage: {
+    component: ReserveRequestPage,
+    url: "/reserves/:id",
+  },
 };
 
 export default {
@@ -43,7 +48,11 @@ export default {
     redirectRoute: "/",
   },
   maker: {
-    routes: [components.allRequestPage, components.reservePage],
+    routes: [
+      components.allRequestPage,
+      components.reservePage,
+      components.reserveRequestPage,
+    ],
     redirectRoute: "/request-list",
   },
 };
