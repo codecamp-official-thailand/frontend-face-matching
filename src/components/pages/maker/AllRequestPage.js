@@ -243,7 +243,7 @@ function AllRequestPage() {
                 color: "blue",
               }}
             >
-              โรงพยาบาลที่อยู่พื้นที่ใกล้เคียงกับคุณ
+              โรงพยาบาลที่ขอทั้งหมด
             </div>
             <Divider style={{ backgroundColor: "blue", marginBottom: "0" }} />
             <Table
