@@ -23,17 +23,27 @@ const columns = [
     ),
   },
   {
-    title: "จำนวนที่ขอ",
+    title: "จำนวนการขอทั้งหมด",
+    render: (text, record) => (
+      <div>
+        {record.request_amount +
+          record.reserve_amount +
+          record.delivered_amount}
+      </div>
+    ),
+  },
+  {
+    title: "จำนวนที่เหลือ",
     dataIndex: "request_amount",
     key: "request_amount",
   },
   {
-    title: "จำนวนที่มีคนจอง",
+    title: "จำนวนที่จองแล้ว",
     dataIndex: "reserve_amount",
     key: "reserve_amount",
   },
   {
-    title: "จำนวนที่ส่งไปแล้ว",
+    title: "จำนวนที่ส่งแล้ว",
     dataIndex: "delivered_amount",
     key: "delivered_amount",
   },

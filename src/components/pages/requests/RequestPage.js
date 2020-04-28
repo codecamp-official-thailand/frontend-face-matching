@@ -315,17 +315,27 @@ function RequestPage(props) {
       ),
     },
     {
-      title: "จำนวนที่ขอ",
+      title: "จำนวนการขอทั้งหมด",
+      render: (text, record) => (
+        <div>
+          {record.request_amount +
+            record.reserve_amount +
+            record.delivered_amount}
+        </div>
+      ),
+    },
+    {
+      title: "จำนวนที่เหลือ",
       dataIndex: "request_amount",
       key: "request_amount",
     },
     {
-      title: "จำนวนที่กำลังส่ง",
+      title: "จำนวนที่จองแล้ว",
       dataIndex: "reserve_amount",
       key: "reserve_amount",
     },
     {
-      title: "จำนวนที่ส่งไปแล้ว",
+      title: "จำนวนที่ส่งแล้ว",
       dataIndex: "delivered_amount",
       key: "delivered_amount",
     },
@@ -353,7 +363,7 @@ function RequestPage(props) {
         >
           <Row justify="center">
             <Title level={2} style={{ marginTop: "25px" }}>
-              ฟอร์มสำหรับขอ Face - Shield
+              แบบฟอร์มสำหรับขออุปกรณ์
             </Title>
           </Row>
           <Divider
@@ -498,7 +508,7 @@ function RequestPage(props) {
                   htmlType="submit"
                   type="primary"
                 >
-                  ส่งขอ Face Shield
+                  ส่งคำขออุปกรณ์
                 </Button>
               </Form>
             </Col>

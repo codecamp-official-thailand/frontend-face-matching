@@ -41,7 +41,7 @@ function Navbar(props) {
         title={
           <span>
             <MailOutlined />
-            <span>คำร้องขอทั้งหมด</span>
+            <span>การขออุปกรณ์ทั้งหมด</span>
           </span>
         }
       ></SubMenu>

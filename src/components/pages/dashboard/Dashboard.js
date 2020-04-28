@@ -78,19 +78,17 @@ function Dashboard() {
               }}
               data={{
                 labels: [
-                  "จำนวนที่ขอทั้งหมด",
-                  "จำนวนที่กำลังส่ง",
+                  "จำนวนที่อยู่ในระหว่างดำเนินการ",
                   "จำนวนที่ส่งเรียบร้อยแล้ว",
                 ],
                 datasets: [
                   {
                     data: [
-                      stats.request_amount,
-                      stats.reserve_amount,
+                      stats.request_amount + stats.reserve_amount,
                       stats.delivered_amount,
                     ],
-                    backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-                    hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                    backgroundColor: ["#FF6384", "#36A2EB"],
+                    hoverBackgroundColor: ["#FF6384", "#36A2EB"],
                   },
                 ],
               }}
